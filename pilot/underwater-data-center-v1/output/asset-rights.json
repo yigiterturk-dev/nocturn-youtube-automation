@@ -1,0 +1,63 @@
+{
+  "project": "SignalForge Pilot 01",
+  "generatedAt": "2026-08-15T22:08:35.197Z",
+  "publishingApproved": false,
+  "assets": [
+    {
+      "path": "assets/01-ocean-seabed.png",
+      "type": "AI-generated still image",
+      "provider": "OpenAI built-in image generation",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "assets/02-deployment.png",
+      "type": "AI-generated still image",
+      "provider": "OpenAI built-in image generation",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "assets/03-server-vessel.png",
+      "type": "AI-generated still image",
+      "provider": "OpenAI built-in image generation",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "assets/04-rov-module.png",
+      "type": "AI-generated still image",
+      "provider": "OpenAI built-in image generation",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "assets/05-retrieval.png",
+      "type": "AI-generated still image",
+      "provider": "OpenAI built-in image generation",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "assets/06-future-coast.png",
+      "type": "AI-generated still image",
+      "provider": "OpenAI built-in image generation",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "output/final-video.mp4#voice",
+      "type": "Synthetic narration",
+      "provider": "macOS system voice: Daniel",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": true
+    },
+    {
+      "path": "output/final-video.mp4#music",
+      "type": "Procedurally synthesized ambient bed",
+      "provider": "FFmpeg lavfi",
+      "externalCopyrightedMedia": false,
+      "humanReviewRequired": false
+    }
+  ]
+}

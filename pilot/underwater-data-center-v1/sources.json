@@ -1,0 +1,45 @@
+{
+  "topic": "Microsoft Project Natick Phase 2",
+  "accessedAt": "2026-08-16",
+  "sources": [
+    {
+      "id": "microsoft-natick-overview",
+      "publisher": "Microsoft Research",
+      "title": "Project Natick",
+      "url": "https://www.microsoft.com/en-us/research/project/natick/",
+      "supports": [
+        "Project Natick was a subsea data-center feasibility research project.",
+        "The Phase 2 server failure rate was one-eighth that of the land-based control group."
+      ]
+    },
+    {
+      "id": "microsoft-natick-phase-2",
+      "publisher": "Microsoft Research",
+      "title": "Project Natick Phase 2",
+      "url": "https://natick.research.microsoft.com/",
+      "supports": [
+        "The vessel was deployed 117 feet deep off Orkney in June 2018 and operated for two years.",
+        "The payload contained 12 racks, 864 servers, and 27.6 petabytes of storage.",
+        "The internal environment used dry nitrogen.",
+        "Microsoft identified the nitrogen environment and absence of human contact as likely reliability factors.",
+        "Project Natick remained a research project rather than a generally available product."
+      ]
+    },
+    {
+      "id": "microsoft-deployment-story",
+      "publisher": "Microsoft Source",
+      "title": "Under the sea, Microsoft tests a datacenter",
+      "url": "https://news.microsoft.com/features/under-the-sea-microsoft-tests-a-datacenter-thats-quick-to-deploy-could-provide-internet-connectivity-for-years/",
+      "supports": [
+        "The module was lowered to the seabed using a barge, crane, winches, and a remotely operated vehicle.",
+        "The Orkney grid supplied renewable electricity.",
+        "The project investigated cold-ocean cooling and lights-out operation."
+      ]
+    }
+  ],
+  "editorialNotes": [
+    "Narration is an original synthesis and contains no direct quotation.",
+    "The conclusion is framed as interpretation, not as a claim of commercial availability.",
+    "No claim is made that underwater data centers are universally superior or environmentally impact-free."
+  ]
+}

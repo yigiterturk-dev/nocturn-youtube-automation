@@ -1,0 +1,66 @@
+{
+  "project": "SignalForge Pilot 01",
+  "slug": "underwater-data-center-v1",
+  "title": "The Cloud Has a Seabed",
+  "format": "16:9 documentary pilot",
+  "voice": "Daniel",
+  "speechRate": 155,
+  "scenes": [
+    {
+      "id": "01-hook",
+      "asset": "assets/01-ocean-seabed.png",
+      "title": "THE CLOUD, UNDER THE SEA",
+      "stat": "A TRUE EXPERIMENT",
+      "narration": "What if the cloud did not live in the sky, but on the ocean floor?"
+    },
+    {
+      "id": "02-deployment",
+      "asset": "assets/02-deployment.png",
+      "title": "PROJECT NATICK",
+      "stat": "ORKNEY · 2018 · 117 FT",
+      "narration": "In 2018, Microsoft lowered a sealed data center module 117 feet beneath the North Sea, off Scotland's Orkney Islands."
+    },
+    {
+      "id": "03-payload",
+      "asset": "assets/03-server-vessel.png",
+      "title": "INSIDE THE VESSEL",
+      "stat": "864 SERVERS · 27.6 PB",
+      "narration": "Inside were twelve racks, 864 standard servers, and 27.6 petabytes of storage, all surrounded by dry nitrogen."
+    },
+    {
+      "id": "04-lights-out",
+      "asset": "assets/04-rov-module.png",
+      "title": "TWO YEARS, LIGHTS OUT",
+      "stat": "NO ON-SITE MAINTENANCE",
+      "narration": "The capsule ran for two years without anyone opening it or replacing a single component on site."
+    },
+    {
+      "id": "05-result",
+      "asset": "assets/05-retrieval.png",
+      "title": "THE SURPRISE",
+      "stat": "1/8 THE FAILURE RATE",
+      "narration": "When engineers recovered it, the underwater servers had failed at just one-eighth the rate of a comparable land-based control group."
+    },
+    {
+      "id": "06-reasons",
+      "asset": "assets/03-server-vessel.png",
+      "title": "WHY DID IT WORK?",
+      "stat": "LESS CORROSION · STABLE COOLING",
+      "narration": "Microsoft's researchers pointed to lower corrosion, stable temperatures, and the absence of people bumping hardware during repairs."
+    },
+    {
+      "id": "07-caveat",
+      "asset": "assets/04-rov-module.png",
+      "title": "NOT A MAGIC SOLUTION",
+      "stat": "RESEARCH, NOT A PRODUCT",
+      "narration": "But the experiment did not prove that every data center belongs underwater. Repairs require retrieval, marine impacts need monitoring, and the economics remain location-specific."
+    },
+    {
+      "id": "08-outro",
+      "asset": "assets/06-future-coast.png",
+      "title": "A NARROWER, STRANGER TRUTH",
+      "stat": "THE CLOUD HAS A SEABED",
+      "narration": "It proved something narrower, and stranger: a sealed computer factory can survive on the seabed for years. The future of the cloud may be waiting below the tide."
+    }
+  ]
+}

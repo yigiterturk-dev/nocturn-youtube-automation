@@ -1,0 +1,9 @@
+protocol_version: NUSP-1.0
+name: YouTube Automation
+slug: youtube-automation
+mode: new
+project_type: automation
+created_at: 2026-07-28T00:00:00+03:00
+status: discovery
+canonical_workspace: projects/youtube-automation
+

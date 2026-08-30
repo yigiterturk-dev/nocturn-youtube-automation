@@ -1,0 +1,37 @@
+{
+  "project": "SignalForge Pilot 01",
+  "title": "The Cloud Has a Seabed",
+  "generatedAt": "2026-08-15T22:08:35.219Z",
+  "durationSeconds": 77.1,
+  "resolution": "1920x1080",
+  "frameRate": 30,
+  "videoCodec": "H.264",
+  "audioCodec": "AAC",
+  "targetLoudness": "-16 LUFS (one-pass normalization)",
+  "sceneCount": 8,
+  "sourceCount": 3,
+  "narration": {
+    "voice": "Daniel",
+    "rate": 155,
+    "originalScript": true
+  },
+  "captions": {
+    "sidecar": "captions.srt",
+    "burnedIn": true
+  },
+  "visuals": {
+    "generatedStillImages": 6,
+    "motion": "deterministic Ken Burns movement and editorial overlays"
+  },
+  "checks": {
+    "requiredOutputsPresent": true,
+    "durationWithinPilotContract": true,
+    "noAutomaticPublishing": true,
+    "humanReviewRequired": true
+  },
+  "sha256": {
+    "video": "62e5217989073bc053293ad3654a09307caacdcb4da3bee72c72e970bff4fa4b",
+    "thumbnail": "81610ff1cc3b9126cce8bb8dd2e9c64fe6b31a934d901664e20e6c8ebf899827",
+    "captions": "2a5dcee0a867565084091b275bf161e88ea15981900f4d7df739a1f9b3b1ef0b"
+  }
+}

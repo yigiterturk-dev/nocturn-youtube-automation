@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --button-outline: rgba(12,20,30,.10); --badge-outline: rgba(12,20,30,.06); --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(12,20,30,.035); --elevate-2: rgba(12,20,30,.075);
+  --background: 210 22% 97%; --foreground: 216 24% 12%; --border: 210 16% 87%;
+  --card: 0 0% 100%; --card-foreground: 216 24% 12%; --card-border: 210 16% 89%;
+  --sidebar: 210 20% 94%; --sidebar-foreground: 216 24% 12%; --sidebar-border: 210 16% 87%;
+  --sidebar-primary: 8 88% 58%; --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 18% 89%; --sidebar-accent-foreground: 216 24% 12%; --sidebar-ring: 8 88% 58%;
+  --popover: 0 0% 100%; --popover-foreground: 216 24% 12%; --popover-border: 210 16% 87%;
+  --primary: 8 88% 58%; --primary-foreground: 0 0% 100%;
+  --secondary: 210 18% 91%; --secondary-foreground: 216 24% 16%;
+  --muted: 210 16% 92%; --muted-foreground: 213 10% 42%;
+  --accent: 205 82% 91%; --accent-foreground: 211 61% 24%;
+  --destructive: 0 72% 48%; --destructive-foreground: 0 0% 100%;
+  --input: 210 16% 76%; --ring: 8 88% 58%;
+  --chart-1: 8 88% 58%; --chart-2: 198 82% 46%; --chart-3: 158 58% 38%; --chart-4: 38 88% 52%; --chart-5: 272 62% 58%;
+  --font-sans: "Geist", sans-serif; --font-serif: Georgia, serif; --font-mono: "IBM Plex Mono", monospace;
+  --radius: .375rem;
+  --sidebar-primary-border: hsl(var(--sidebar-primary)); --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --primary-border: hsl(var(--primary)); --secondary-border: hsl(var(--secondary)); --muted-border: hsl(var(--muted));
+  --accent-border: hsl(var(--accent)); --destructive-border: hsl(var(--destructive));
+}
+.dark {
+  --button-outline: rgba(255,255,255,.10); --badge-outline: rgba(255,255,255,.06); --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255,255,255,.045); --elevate-2: rgba(255,255,255,.09);
+  --background: 214 22% 7%; --foreground: 210 18% 92%; --border: 214 14% 17%;
+  --card: 214 19% 9%; --card-foreground: 210 18% 92%; --card-border: 214 14% 16%;
+  --sidebar: 215 22% 8%; --sidebar-foreground: 210 18% 92%; --sidebar-border: 214 14% 16%;
+  --sidebar-primary: 8 92% 64%; --sidebar-primary-foreground: 216 30% 8%;
+  --sidebar-accent: 214 16% 14%; --sidebar-accent-foreground: 210 18% 92%; --sidebar-ring: 8 92% 64%;
+  --popover: 214 18% 11%; --popover-foreground: 210 18% 92%; --popover-border: 214 14% 19%;
+  --primary: 8 92% 64%; --primary-foreground: 216 30% 8%;
+  --secondary: 214 15% 16%; --secondary-foreground: 210 18% 92%;
+  --muted: 214 14% 15%; --muted-foreground: 212 10% 64%;
+  --accent: 205 28% 17%; --accent-foreground: 198 76% 72%;
+  --destructive: 0 65% 48%; --destructive-foreground: 0 0% 100%;
+  --input: 214 14% 27%; --ring: 8 92% 64%;
+  --chart-1: 8 92% 64%; --chart-2: 198 82% 60%; --chart-3: 158 58% 53%; --chart-4: 38 88% 61%; --chart-5: 272 70% 69%;
+}
+@layer base {
+  * { @apply border-border; }
+  html { @apply antialiased; }
+  body { @apply bg-background font-sans text-foreground; min-width: 320px; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+}
+@layer utilities {
+  .hover-elevate,.active-elevate-2 { position:relative;z-index:0; }
+  .hover-elevate::after,.active-elevate-2::after { content:"";pointer-events:none;position:absolute;inset:0;border-radius:inherit;z-index:999; }
+  .hover-elevate:hover::after { background:var(--elevate-1); }
+  .active-elevate-2:active::after { background:var(--elevate-2); }
+}

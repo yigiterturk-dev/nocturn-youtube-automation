@@ -1,0 +1,31 @@
+version: 0.1.0-provisional
+status: incomplete
+anchors:
+  strategic_insight:
+    value: "Automation wins by shortening the path from signal to an original, useful story—not by removing editorial judgment."
+    status: provisional
+  primary_narrative:
+    value: "A timely question or curiosity becomes a sourced explanation with a distinct payoff."
+    status: provisional
+  visual_thesis:
+    value: null
+    status: BLOCKING_UNKNOWN
+  signature_behavior:
+    value: "Each episode should contain a repeatable but topic-specific reveal, comparison, or evidence turn."
+    status: provisional
+  content_proof:
+    value: "Source ledger, factual review, and channel analytics."
+    status: provisional
+  forbidden_patterns:
+    value:
+      - lightly edited reuploads
+      - single-source paraphrases
+      - generic AI slideshow videos
+      - cloned celebrity voices or deceptive likenesses
+      - fake urgency, misleading thumbnails, and fabricated events
+      - repetitive uploads with minimal variation
+    status: approved
+  uniqueness_target:
+    value: null
+    status: BLOCKING_UNKNOWN
+

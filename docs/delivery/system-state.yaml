@@ -1,0 +1,56 @@
+protocol_version: NUSP-1.0
+project:
+  name: YouTube Automation
+  slug: youtube-automation
+  workspace: projects/youtube-automation
+  mode: new
+project_zero:
+  gate: 0
+  status: PASS
+  project_dna_version: pending
+  reference_pool_version: pending
+delivery:
+  gate: G6
+  status: PASS_WITH_RECORDED_EXCEPTION
+specialists:
+  researcher: not_started
+  reference_scan: not_started
+  art_direction: not_started
+  motion: not_started
+  implementation: pass
+  visual_qa: pass
+approvals:
+  direction: pending
+  static: pending
+  release: pending
+open_decisions:
+  - channel niche, language, and audience
+  - existing or new channel
+  - long-form, Shorts, or both
+  - exact editorial voice and originality standard
+  - production model, budget, and success metric
+  - Google Cloud / YouTube API credentials
+  - authentication owner accounts and roles
+  - production provider credentials for AI, voice, imagery, and rendering
+  - deployment target and production domain
+  - current explicit production release approval
+milestones:
+  pilot_01: rendered_77s_human_review_pending
+  pilot_01_format: cinematic_generated_stills_with_documentary_overlays
+  pilot_01_publish_status: locked
+  source_ledger: implemented
+  claim_verification: implemented
+  research_gate: requires_5_verified_sources
+  voiceover_queue: implemented_waiting_for_provider
+  visual_plan_queue: implemented_waiting_for_provider
+  render_queue: implemented_with_prerequisite_gate
+  artifact_review: owner_only
+  publishing: human_locked
+  observability: implemented
+  deployment_package: docker_and_railway_ready
+  trend_engine: snapshot_outlier_v2
+  trend_deduplication: youtube_video_id_upsert
+  trend_scheduler: implemented_120_minute_default
+  trend_live_state: blocked_by_youtube_api_key
+active_handoff: null
+updated_at: 2026-08-16T00:00:00+03:00

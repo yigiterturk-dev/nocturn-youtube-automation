@@ -1,0 +1,21 @@
+version: 0.1.0
+assets:
+  - name: channel_identity
+    status: BLOCKING_UNKNOWN
+  - name: channel_name
+    status: BLOCKING_UNKNOWN
+  - name: logo_and_banner
+    status: TO_BE_CREATED
+  - name: thumbnail_system
+    status: TO_BE_CREATED
+  - name: voice_or_presenter
+    status: BLOCKING_UNKNOWN
+  - name: music_and_sound_library
+    status: BLOCKING_UNKNOWN
+  - name: footage_and_image_sources
+    status: BLOCKING_UNKNOWN
+  - name: youtube_channel_access
+    status: BLOCKING_UNKNOWN
+  - name: analytics_access
+    status: BLOCKING_UNKNOWN
+
