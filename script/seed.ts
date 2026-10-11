@@ -10,8 +10,8 @@ const client = postgres(url, { max: 1 });
 const db = drizzle(client);
 
 const [workspace] = await db.insert(workspaces).values({
-  name: "SignalForge",
-  slug: "signalforge",
+  name: "Nocturn YouTube Automation",
+  slug: "nocturn-youtube",
 }).onConflictDoNothing().returning();
 
 const existing = workspace || (await db.select().from(workspaces).limit(1))[0];
@@ -21,8 +21,8 @@ const ownerPassword = process.env.LOCAL_SEED_OWNER_PASSWORD;
 if (ownerPassword) {
   await db.insert(members).values({
     workspaceId: existing.id,
-    email: (process.env.LOCAL_SEED_OWNER_EMAIL || "owner@signalforge.local").toLowerCase(),
-    displayName: "SignalForge Owner",
+    email: (process.env.LOCAL_SEED_OWNER_EMAIL || "owner@nocturn-youtube.local").toLowerCase(),
+    displayName: "Nocturn Owner",
     role: "owner",
     passwordHash: await hashPassword(ownerPassword),
   }).onConflictDoNothing();

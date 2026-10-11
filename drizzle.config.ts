@@ -5,6 +5,6 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "postgresql://signalforge:signalforge@localhost:5432/signalforge",
+    url: process.env.DATABASE_URL || "postgresql://localhost:5432/nocturn_youtube_local",
   },
 });

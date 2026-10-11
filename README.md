@@ -1,4 +1,4 @@
-# SignalForge
+# Nocturn YouTube Automation
 
 Private editorial and production control plane for evidence-led, faceless
 YouTube channels. Discovery, research, claims, media production, and release
@@ -8,9 +8,9 @@ authority are separated by persistent gates.
 
 ```bash
 npm install
-DATABASE_URL=postgresql://localhost:5432/signalforge_local npm run db:migrate
-DATABASE_URL=postgresql://localhost:5432/signalforge_local npm run db:seed
-DATABASE_URL=postgresql://localhost:5432/signalforge_local AUTH_REQUIRED=true \
+DATABASE_URL=postgresql://localhost:5432/nocturn_youtube_local npm run db:migrate
+DATABASE_URL=postgresql://localhost:5432/nocturn_youtube_local npm run db:seed
+DATABASE_URL=postgresql://localhost:5432/nocturn_youtube_local AUTH_REQUIRED=true \
   SESSION_SECRET=replace-with-at-least-32-characters PORT=5195 npm run dev
 ```
 

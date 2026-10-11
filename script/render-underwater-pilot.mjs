@@ -67,7 +67,7 @@ const renderSceneOverlay = (scene, index, destination) => {
     "-fill", "rgba(2,9,18,0.42)", "-draw", "rectangle 0,0 1920,300",
     "-fill", "rgba(2,9,18,0.80)", "-draw", `roundrectangle 190,${captionTop} 1730,990 24,24`,
     "-fill", "#ff6b57", "-draw", "roundrectangle 92,72 98,106 3,3",
-    "-gravity", "northwest", "-fill", "white", "-pointsize", "22", "-kerning", "4", "-annotate", "+118+72", "SIGNALFORGE · PILOT 01",
+    "-gravity", "northwest", "-fill", "white", "-pointsize", "22", "-kerning", "4", "-annotate", "+118+72", "NOCTURN · PILOT 01",
     "-gravity", "northeast", "-fill", "#d2e3ee", "-pointsize", "21", "-kerning", "0", "-annotate", "+92+72", `${String(index + 1).padStart(2, "0")} / ${String(manifest.scenes.length).padStart(2, "0")}`,
     "-gravity", "northwest", "-fill", "white", "-pointsize", "62", "-kerning", "1", "-annotate", "+92+142", scene.title,
     "-fill", "#ff8b79", "-pointsize", "25", "-kerning", "4", "-annotate", "+94+222", scene.stat,
@@ -94,7 +94,7 @@ const renderThumbnailOverlay = (destination) => {
     "-annotate", "+112+544", "UNDERWATER?",
     "-fill", "#ff6b57", "-draw", "roundrectangle 112,714 820,790 38,38",
     "-fill", "#06111d", "-pointsize", "28", "-kerning", "3", "-annotate", "+148+728", "PROJECT NATICK · 2 YEARS",
-    "-fill", "#d7e4ec", "-pointsize", "26", "-kerning", "5", "-annotate", "+112+920", "SIGNALFORGE · PILOT 01",
+    "-fill", "#d7e4ec", "-pointsize", "26", "-kerning", "5", "-annotate", "+112+920", "NOCTURN · PILOT 01",
     destination,
   ]);
 };

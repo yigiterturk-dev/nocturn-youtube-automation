@@ -1,4 +1,4 @@
-# SignalForge Video Quality & Production Plan
+# Nocturn YouTube Automation Video Quality & Production Plan
 
 Date: 2026-07-28  
 Status: Approved working direction  
@@ -6,7 +6,7 @@ Production allowed: No — owner review remains mandatory
 
 ## Objective
 
-Use SignalForge to turn validated YouTube trend opportunities into original,
+Use Nocturn YouTube Automation to turn validated YouTube trend opportunities into original,
 high-quality faceless documentary videos without appearing on camera.
 
 The target is not generic, fully AI-generated content. The target is an
@@ -45,7 +45,7 @@ YouTube upload
 
 ## Where videos will be created
 
-SignalForge remains the control panel and source of truth.
+Nocturn YouTube Automation remains the control panel and source of truth.
 
 - The panel manages trends, research, scripts, jobs, review, and approval.
 - A separate render worker performs heavy media processing.

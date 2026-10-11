@@ -1,4 +1,4 @@
-# SignalForge prototype QA
+# Nocturn YouTube Automation prototype QA
 
 Date: 2026-07-28
 
@@ -10,7 +10,7 @@ Date: 2026-07-28
 - Pipeline advancement mutation: implemented
 - Browser console errors and warnings: none
 - Production publishing authority: false
-- PostgreSQL migration: PASS (`signalforge_local`)
+- PostgreSQL migration: PASS (`nocturn_youtube_local`)
 - PostgreSQL health: PASS
 - Production configuration validation: PASS
 - Security headers and API rate limiting: PASS
