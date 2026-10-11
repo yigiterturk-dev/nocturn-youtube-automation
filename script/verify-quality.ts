@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { assessDossier, excerptAppearsIn, splitIntoScenes, type EditorialDossier } from "../server/editorial";
 import { htmlToText } from "../server/providers/fetch-page";
+import { pickSources } from "../server/providers/serper";
 import { captionChunks, toSrt } from "../server/media/render";
 import { estimateWordTimings } from "../server/providers/elevenlabs";
 import { lintTitle, rankHooks, scoreHook, validateChapters } from "../server/quality";
@@ -72,5 +73,17 @@ assert.ok(excerptAppearsIn(page, "In 2018 Microsoft deployed a data center off t
 assert.ok(excerptAppearsIn(page, "MICROSOFT DEPLOYED A DATA CENTER OFF THE ORKNEY ISLANDS"), "case and spacing are tolerated");
 assert.ok(!excerptAppearsIn(page, "Microsoft deployed a data center off the coast of Japan"), "invented quotes are rejected");
 assert.ok(!excerptAppearsIn(page, "two years."), "too-short quotes prove nothing");
+
+const picked = pickSources([
+  { title: "Forum", link: "https://news.ycombinator.com/item?id=1", snippet: "" },
+  { title: "Video", link: "https://www.youtube.com/watch?v=x", snippet: "" },
+  { title: "Blog", link: "https://someblog.io/post", snippet: "" },
+  { title: "Agency", link: "https://www.energy.gov/report", snippet: "" },
+  { title: "Agency again", link: "https://www.energy.gov/other", snippet: "" },
+  { title: "Wire", link: "https://www.reuters.com/x", snippet: "" },
+  { title: "Paper", link: "https://example.org/paper.pdf", snippet: "" },
+  { title: "Known", link: "https://known.com/a", snippet: "" },
+], new Set(["https://known.com/a"]), 5);
+assert.deepEqual(picked.map((item) => item.host), ["energy.gov", "reuters.com", "someblog.io"], "primary first, one per publisher, no forums/video/pdf/duplicates");
 
 console.log("quality gates: PASS");

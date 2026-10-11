@@ -21,6 +21,7 @@ const schema = z.object({
   ELEVENLABS_VOICE_ID: z.string().default("JBFqnCBsd6RMkjVDRZzb"),
   ELEVENLABS_MODEL: z.string().default("eleven_multilingual_v2"),
   PEXELS_API_KEY: z.string().min(20).optional(),
+  SERPER_API_KEY: z.string().min(20).optional(),
   MEDIA_DIR: z.string().default("./media"),
   CHANNEL_NAME: z.string().default(""),
   // Development only: lets the worker fall back to macOS `say` so the pipeline can be tested without ElevenLabs.

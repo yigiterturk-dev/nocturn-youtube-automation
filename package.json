@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx server/index.ts",
+    "dev": "tsx --env-file-if-exists=.env server/index.ts",
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc --noEmit",
@@ -12,12 +12,12 @@
     "pilot:underwater": "node script/render-underwater-pilot.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx script/seed.ts",
+    "db:seed": "tsx --env-file-if-exists=.env script/seed.ts",
     "db:studio": "drizzle-kit studio",
-    "worker": "tsx server/worker.ts",
-    "worker:once": "tsx server/worker.ts --once",
+    "worker": "tsx --env-file-if-exists=.env server/worker.ts",
+    "worker:once": "tsx --env-file-if-exists=.env server/worker.ts --once",
     "verify:quality": "tsx script/verify-quality.ts",
-    "verify:e2e": "ALLOW_LOCAL_TTS=true tsx script/e2e-worker.ts"
+    "verify:e2e": "ALLOW_LOCAL_TTS=true tsx --env-file-if-exists=.env script/e2e-worker.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

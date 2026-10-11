@@ -168,3 +168,14 @@ export async function queueSourceExtraction(videoId: string) {
   }).returning())[0];
   return { blocked: false as const, job };
 }
+
+export async function queueSourceDiscovery(videoId: string) {
+  if (!db) throw new Error("DATABASE_URL is required for production jobs");
+  const video = (await db.select().from(videos).where(eq(videos.id, videoId)).limit(1))[0];
+  if (!video) return null;
+  const status = config.SERPER_API_KEY ? "queued" : "waiting_for_provider";
+  return (await db.insert(productionJobs).values({
+    videoId, kind: "source_discovery", provider: "serper", status, progress: status === "queued" ? 10 : 0,
+    input: { title: video.title, rule: "one page per publisher; social, video and forum sites excluded" }, output: {},
+  }).returning())[0];
+}

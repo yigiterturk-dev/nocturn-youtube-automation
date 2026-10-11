@@ -10,6 +10,7 @@ import { config } from "./config";
 import { MINIMUM_VERIFIED_SOURCES, aiProviderStatus, stageStatus, type ProductionStage } from "./ai-workflow";
 import { excerptAppearsIn, extractClaims, planVisuals, sectionsFromScript, writeEpisode, type ScenePlan, type VisualPlan } from "./editorial";
 import { fetchPageText } from "./providers/fetch-page";
+import { pickSources, webSearch } from "./providers/serper";
 import { synthesizeNarration } from "./providers/elevenlabs";
 import { findStockClip } from "./providers/pexels";
 import { renderEpisode, type SceneAudio, type SceneVisual } from "./media/render";
@@ -166,7 +167,28 @@ async function runSourceExtraction(job: Job) {
   return { sources: report, claimsAdded: report.reduce((sum, row) => sum + (Number(row.kept) || 0), 0) };
 }
 
+// Finds independent candidate sources, adds them unverified, then hands over to claim extraction.
+async function runSourceDiscovery(job: Job) {
+  const video = await loadVideo(job.videoId);
+  const existing = await db.select({ url: sources.url }).from(sources).where(eq(sources.videoId, job.videoId));
+  const queries = [video.title, `${video.title} research report data`, `${video.title} analysis ${video.niche}`];
+  const results = [];
+  for (const query of queries) results.push(...await webSearch(query));
+  const picked = pickSources(results, new Set(existing.map((row) => row.url)), Math.max(0, 8 - existing.length));
+  for (const result of picked) {
+    await db.insert(sources).values({ videoId: job.videoId, url: result.link, title: result.title.slice(0, 300), publisher: result.host });
+  }
+  if (picked.length) {
+    await db.insert(productionJobs).values({
+      videoId: job.videoId, kind: "source_extraction", provider: "deepseek", status: aiProviderStatus().configured ? "queued" : "waiting_for_provider",
+      progress: 0, input: { triggeredBy: job.id }, output: {},
+    });
+  }
+  return { queries, candidates: results.length, added: picked.map((result) => ({ title: result.title, url: result.link, tier: result.score })) };
+}
+
 const runners: Record<string, (job: Job) => Promise<Record<string, unknown>>> = {
+  source_discovery: runSourceDiscovery,
   source_extraction: runSourceExtraction,
   editorial_research: runResearch,
   visual_plan: runVisualPlan,
@@ -192,7 +214,9 @@ async function promoteWaitingJobs() {
     const video = (await db.select().from(videos).where(eq(videos.id, job.videoId)).limit(1))[0];
     if (!video) continue;
     let next: string;
-    if (job.kind === "source_extraction") {
+    if (job.kind === "source_discovery") {
+      next = config.SERPER_API_KEY ? "queued" : "waiting_for_provider";
+    } else if (job.kind === "source_extraction") {
       next = aiProviderStatus().configured ? "queued" : "waiting_for_provider";
     } else if (job.kind === "editorial_research") {
       const count = (await verifiedSources(job.videoId)).length;
@@ -216,11 +240,11 @@ async function processJob(job: Job) {
     const runner = runners[job.kind];
     if (!runner) throw new Error(`No runner for job kind ${job.kind}`);
     const output = await runner(job);
-    const selfCompleting = job.kind === "source_extraction";
+    const selfCompleting = job.kind === "source_extraction" || job.kind === "source_discovery";
     await db.update(productionJobs).set({
       status: selfCompleting ? "completed" : "ready_for_review", progress: selfCompleting ? 100 : 95, output: { ...output, producedAt: new Date().toISOString() }, error: null, updatedAt: new Date(),
     }).where(eq(productionJobs.id, job.id));
-    log("job_ready_for_review", { jobId: job.id, kind: job.kind, seconds: Math.round((Date.now() - started) / 1000) });
+    log(selfCompleting ? "job_completed" : "job_ready_for_review", { jobId: job.id, kind: job.kind, seconds: Math.round((Date.now() - started) / 1000) });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await db.update(productionJobs).set({ status: "failed", error: message.slice(0, 2000), updatedAt: new Date() }).where(eq(productionJobs.id, job.id));
