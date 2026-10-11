@@ -18,7 +18,8 @@ DATABASE_URL=postgresql://localhost:5432/nocturn_youtube_local AUTH_REQUIRED=tru
 ## Production pipeline
 
 ```text
-Trend radar → video + 5 verified sources + supported claims
+Trend radar → video + source URLs → "Extract claims" (fetch pages, DeepSeek proposes claims,
+  only claims whose quote is verbatim on the page survive) → editor supports claims, verifies 5 sources
   → Script (DeepSeek: dossier, 5 hooks scored, 3 titles linted)   → owner approves → becomes the script
   → Visual plan (DeepSeek scenes + Pexels stock, 3 Shorts, thumb) → owner approves
   → Voiceover (ElevenLabs, per scene, word timings)               → owner approves

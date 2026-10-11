@@ -154,3 +154,17 @@ export async function getProductionJob(jobId: string) {
   if (!db) throw new Error("DATABASE_URL is required for production jobs");
   return (await db.select().from(productionJobs).where(eq(productionJobs.id, jobId)).limit(1))[0];
 }
+
+export async function queueSourceExtraction(videoId: string) {
+  if (!db) throw new Error("DATABASE_URL is required for production jobs");
+  const video = (await db.select().from(videos).where(eq(videos.id, videoId)).limit(1))[0];
+  if (!video) return null;
+  const sourceCount = (await db.select({ id: sources.id }).from(sources).where(eq(sources.videoId, videoId))).length;
+  if (!sourceCount) return { blocked: true as const, reason: "Add at least one source URL first" };
+  const status = config.DEEPSEEK_API_KEY ? "queued" : "waiting_for_provider";
+  const job = (await db.insert(productionJobs).values({
+    videoId, kind: "source_extraction", provider: "deepseek", status, progress: status === "queued" ? 10 : 0,
+    input: { sourceCount, rule: "excerpt must appear verbatim on the fetched page" }, output: {},
+  }).returning())[0];
+  return { blocked: false as const, job };
+}

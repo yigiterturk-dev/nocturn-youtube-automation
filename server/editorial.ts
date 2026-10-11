@@ -162,3 +162,35 @@ Return exactly ${scenes.length} scene entries, one per index.`;
     thumbnail: plan.thumbnail ?? { text: title.split(" ").slice(0, 3).join(" "), query: scenes[0]?.chapter ?? title },
   };
 }
+
+// Quotes, dashes and whitespace differ between what the model echoes and the page; compare on a normalized form.
+export const normalizeForMatch = (text: string) => text.toLowerCase()
+  .replace(/\[\s*(\d+|[a-z]|citation needed)\s*\]/g, " ")
+  .replace(/[‘’‚‛′]/g, "'").replace(/[“”„″]/g, "\"")
+  .replace(/[‐-―−]/g, "-").replace(/ /g, " ").replace(/\s+/g, " ").trim();
+
+export function excerptAppearsIn(pageText: string, excerpt: string) {
+  const needle = normalizeForMatch(excerpt).replace(/^[\s"'.…]+|[\s"'.…]+$/g, "");
+  return needle.length >= 20 && normalizeForMatch(pageText).includes(needle);
+}
+
+export type ExtractedClaim = { text: string; excerpt: string };
+
+const EXTRACT_SYSTEM = `You extract checkable facts from one source document for a documentary researcher. Return a single json object only.
+Each claim must be a single, specific, self-contained factual statement (numbers, dates, names, outcomes), written in your own words.
+Each excerpt must be copied VERBATIM from the document: one or two consecutive sentences, unchanged, that prove the claim. If you cannot quote it exactly, leave the claim out.`;
+
+export async function extractClaims(episodeTitle: string, source: { title: string; url: string }, pageText: string, limit = 8) {
+  // ~12k words keeps the request well inside the model's context and cost budget.
+  const document = pageText.split(/\s+/).slice(0, 12_000).join(" ");
+  const result = await deepseekJson<{ claims?: ExtractedClaim[] }>(EXTRACT_SYSTEM, `Episode being researched: ${episodeTitle}
+Source: ${source.title} (${source.url})
+
+Document:
+"""
+${document}
+"""
+
+Return json {"claims": [{"text": "claim in your words", "excerpt": "verbatim supporting sentence(s)"}]} with at most ${limit} claims that are most useful for this episode.`, 4000);
+  return (result.claims ?? []).filter((claim) => typeof claim.text === "string" && typeof claim.excerpt === "string" && claim.text.trim().length >= 8);
+}

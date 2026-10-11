@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { assessDossier, splitIntoScenes, type EditorialDossier } from "../server/editorial";
+import { assessDossier, excerptAppearsIn, splitIntoScenes, type EditorialDossier } from "../server/editorial";
+import { htmlToText } from "../server/providers/fetch-page";
 import { captionChunks, toSrt } from "../server/media/render";
 import { estimateWordTimings } from "../server/providers/elevenlabs";
 import { lintTitle, rankHooks, scoreHook, validateChapters } from "../server/quality";
@@ -64,5 +65,12 @@ const assessed = assessDossier(dossier, new Set(["c1"]));
 assert.ok(assessed.sections[0].narration.startsWith(HOOKS[0]), "weak opener must be swapped for the strongest hook");
 assert.ok(assessed.problems.some((problem) => problem.includes("ghost")), "unknown claim IDs must be flagged");
 assert.ok(assessed.problems.some((problem) => problem.includes("words")), "short script must be flagged");
+
+const page = htmlToText(`<html><head><style>.x{}</style><script>var a=1</script></head><body><nav>Menu</nav><p>In 2018 Microsoft deployed a data center[ 1 ] off the Orkney Islands &amp; ran it for two years.</p></body></html>`);
+assert.ok(!page.includes("var a") && !page.includes("Menu") && page.includes("Orkney Islands & ran"));
+assert.ok(excerptAppearsIn(page, "In 2018 Microsoft deployed a data center off the Orkney Islands & ran it for two years."), "citation markers must not break a real quote");
+assert.ok(excerptAppearsIn(page, "MICROSOFT DEPLOYED A DATA CENTER OFF THE ORKNEY ISLANDS"), "case and spacing are tolerated");
+assert.ok(!excerptAppearsIn(page, "Microsoft deployed a data center off the coast of Japan"), "invented quotes are rejected");
+assert.ok(!excerptAppearsIn(page, "two years."), "too-short quotes prove nothing");
 
 console.log("quality gates: PASS");

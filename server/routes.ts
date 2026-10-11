@@ -8,7 +8,7 @@ import { z } from "zod";
 import { resolve, sep } from "node:path";
 import { config } from "./config";
 import { completeYouTubeAuthorization, createYouTubeAuthorization, youtubeOAuthStatus } from "./youtube-oauth";
-import { aiProviderStatus, editorialOutputContract, getProductionJob, listProductionJobs, queueEditorialResearch, queueProductionStage, reviewProductionJob, setPublishApproval } from "./ai-workflow";
+import { aiProviderStatus, editorialOutputContract, getProductionJob, listProductionJobs, queueSourceExtraction, queueEditorialResearch, queueProductionStage, reviewProductionJob, setPublishApproval } from "./ai-workflow";
 import { operationalMetrics } from "./observability";
 import { createTrendWatchlist, listTrendWatchlists, scanTrendWatchlist, trendEngineStatus } from "./trend-engine";
 
@@ -141,6 +141,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
     const source = await storage.verifySource(String(req.params.sourceId), String(req.params.videoId), parsed.data.verified);
     return source ? res.json(source) : res.status(404).json({ message: "Source not found" });
+  });
+  app.post("/api/videos/:id/extract-claims", requireRole("editor"), async (req, res) => {
+    const result = await queueSourceExtraction(String(req.params.id));
+    if (!result) return res.status(404).json({ message: "Video not found" });
+    if (result.blocked) return res.status(409).json({ message: result.reason });
+    return res.status(202).json(result.job);
   });
   app.get("/api/videos/:id/claims", requireRole("viewer"), async (req, res) => {
     return res.json(await storage.getClaims(String(req.params.id)));

@@ -8,7 +8,8 @@ import postgres from "postgres";
 import { claims, productionJobs, sources, videos } from "@shared/schema";
 import { config } from "./config";
 import { MINIMUM_VERIFIED_SOURCES, aiProviderStatus, stageStatus, type ProductionStage } from "./ai-workflow";
-import { planVisuals, sectionsFromScript, writeEpisode, type ScenePlan, type VisualPlan } from "./editorial";
+import { excerptAppearsIn, extractClaims, planVisuals, sectionsFromScript, writeEpisode, type ScenePlan, type VisualPlan } from "./editorial";
+import { fetchPageText } from "./providers/fetch-page";
 import { synthesizeNarration } from "./providers/elevenlabs";
 import { findStockClip } from "./providers/pexels";
 import { renderEpisode, type SceneAudio, type SceneVisual } from "./media/render";
@@ -137,7 +138,36 @@ async function runRender(job: Job) {
   return { outputDir, report, files: ["final-video.mp4", "thumbnail.png", "captions.srt", "title-description-tags.json", "sources.json", "asset-rights.json", "production-report.json", ...report.shorts.map((short) => short.file)] };
 }
 
+// Reads every source that has no extracted claims yet, keeps only claims whose quote is really on the page.
+// Claims land as "unverified" with their evidence attached; an editor still has to support each one.
+async function runSourceExtraction(job: Job) {
+  const video = await loadVideo(job.videoId);
+  const sourceRows = await db.select().from(sources).where(eq(sources.videoId, job.videoId));
+  const existing = await db.select({ sourceId: claims.sourceId, text: claims.text }).from(claims).where(eq(claims.videoId, job.videoId));
+  const done = new Set(existing.map((claim) => claim.sourceId));
+  const pending = sourceRows.filter((source) => !done.has(source.id));
+  const report: Record<string, unknown>[] = [];
+  for (let position = 0; position < pending.length; position += 1) {
+    const source = pending[position];
+    try {
+      const page = await fetchPageText(source.url);
+      if (page.text.split(/\s+/).length < 80) throw new Error("Page has too little readable text (paywall, script-rendered page or PDF?)");
+      const extracted = await extractClaims(video.title, source, page.text);
+      const kept = extracted.filter((claim) => excerptAppearsIn(page.text, claim.excerpt));
+      for (const claim of kept) {
+        await db.insert(claims).values({ videoId: job.videoId, sourceId: source.id, text: claim.text.trim().slice(0, 1000), status: "unverified", evidenceExcerpt: claim.excerpt.trim().slice(0, 2000), confidence: 90 });
+      }
+      report.push({ sourceId: source.id, title: source.title, proposed: extracted.length, kept: kept.length, rejectedForMissingQuote: extracted.length - kept.length });
+    } catch (error) {
+      report.push({ sourceId: source.id, title: source.title, error: error instanceof Error ? error.message : String(error) });
+    }
+    await progress(job, 15 + Math.round(((position + 1) / pending.length) * 80));
+  }
+  return { sources: report, claimsAdded: report.reduce((sum, row) => sum + (Number(row.kept) || 0), 0) };
+}
+
 const runners: Record<string, (job: Job) => Promise<Record<string, unknown>>> = {
+  source_extraction: runSourceExtraction,
   editorial_research: runResearch,
   visual_plan: runVisualPlan,
   voiceover: runVoiceover,
@@ -162,7 +192,9 @@ async function promoteWaitingJobs() {
     const video = (await db.select().from(videos).where(eq(videos.id, job.videoId)).limit(1))[0];
     if (!video) continue;
     let next: string;
-    if (job.kind === "editorial_research") {
+    if (job.kind === "source_extraction") {
+      next = aiProviderStatus().configured ? "queued" : "waiting_for_provider";
+    } else if (job.kind === "editorial_research") {
       const count = (await verifiedSources(job.videoId)).length;
       next = count < MINIMUM_VERIFIED_SOURCES ? "waiting_for_sources" : aiProviderStatus().configured ? "queued" : "waiting_for_provider";
     } else if (job.kind in runners) {
@@ -184,8 +216,9 @@ async function processJob(job: Job) {
     const runner = runners[job.kind];
     if (!runner) throw new Error(`No runner for job kind ${job.kind}`);
     const output = await runner(job);
+    const selfCompleting = job.kind === "source_extraction";
     await db.update(productionJobs).set({
-      status: "ready_for_review", progress: 95, output: { ...output, producedAt: new Date().toISOString() }, error: null, updatedAt: new Date(),
+      status: selfCompleting ? "completed" : "ready_for_review", progress: selfCompleting ? 100 : 95, output: { ...output, producedAt: new Date().toISOString() }, error: null, updatedAt: new Date(),
     }).where(eq(productionJobs.id, job.id));
     log("job_ready_for_review", { jobId: job.id, kind: job.kind, seconds: Math.round((Date.now() - started) / 1000) });
   } catch (error) {
