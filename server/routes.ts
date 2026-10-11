@@ -5,8 +5,10 @@ import { storage } from "./storage";
 import { youtubeConnectorStatus } from "./youtube";
 import { currentMember, login, requireRole, revokeToken } from "./auth";
 import { z } from "zod";
+import { resolve, sep } from "node:path";
+import { config } from "./config";
 import { completeYouTubeAuthorization, createYouTubeAuthorization, youtubeOAuthStatus } from "./youtube-oauth";
-import { aiProviderStatus, editorialOutputContract, listProductionJobs, queueEditorialResearch, queueProductionStage, reviewProductionJob, setPublishApproval } from "./ai-workflow";
+import { aiProviderStatus, editorialOutputContract, getProductionJob, listProductionJobs, queueEditorialResearch, queueProductionStage, reviewProductionJob, setPublishApproval } from "./ai-workflow";
 import { operationalMetrics } from "./observability";
 import { createTrendWatchlist, listTrendWatchlists, scanTrendWatchlist, trendEngineStatus } from "./trend-engine";
 
@@ -88,6 +90,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/production-jobs", requireRole("viewer"), async (req, res) => {
     const videoId = typeof req.query.videoId === "string" ? req.query.videoId : undefined;
     return res.json(await listProductionJobs(videoId));
+  });
+  // Rendered artifacts (video, shorts, thumbnail, package files) for owner review and manual upload.
+  app.get("/api/production-jobs/:id/files/:name", requireRole("viewer"), async (req, res) => {
+    const job = await getProductionJob(String(req.params.id));
+    const files = (job?.output.files as string[] | undefined) ?? [];
+    const name = String(req.params.name);
+    if (!job || typeof job.output.outputDir !== "string" || !files.includes(name)) return res.status(404).json({ message: "File not found" });
+    const root = resolve(config.MEDIA_DIR);
+    const file = resolve(job.output.outputDir, name);
+    if (!file.startsWith(root + sep)) return res.status(404).json({ message: "File not found" });
+    return res.sendFile(file, { dotfiles: "deny" });
   });
   app.post("/api/videos/:id/research", requireRole("editor"), async (req, res) => {
     const job = await queueEditorialResearch(String(req.params.id));

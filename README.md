@@ -14,6 +14,34 @@ DATABASE_URL=postgresql://localhost:5432/signalforge_local AUTH_REQUIRED=true \
   SESSION_SECRET=replace-with-at-least-32-characters PORT=5195 npm run dev
 ```
 
+
+## Production pipeline
+
+```text
+Trend radar → video + 5 verified sources + supported claims
+  → Script (DeepSeek: dossier, 5 hooks scored, 3 titles linted)   → owner approves → becomes the script
+  → Visual plan (DeepSeek scenes + Pexels stock, 3 Shorts, thumb) → owner approves
+  → Voiceover (ElevenLabs, per scene, word timings)               → owner approves
+  → Render (FFmpeg: episode, 3 vertical Shorts, captions, chapters, thumbnail, upload package) → owner approves
+  → Release approval → manual upload (API upload stays disabled)
+```
+
+Jobs run in a separate worker process, never in the web process:
+
+```bash
+npm run worker          # long-running; polls every WORKER_POLL_SECONDS
+npm run worker:once     # drain the queue once
+node dist/worker.cjs    # production (needs ffmpeg, ImageMagick and a font; see Dockerfile)
+```
+
+Keys: `DEEPSEEK_API_KEY`, `ELEVENLABS_API_KEY` (+ `ELEVENLABS_VOICE_ID`), `PEXELS_API_KEY` (free; without it scenes
+fall back to generated typographic cards). Jobs waiting on a missing key move forward on their own once it is set.
+Artifacts are written under `MEDIA_DIR/videos/<videoId>/`.
+
+Checks: `npm run verify:quality` (hook/title/chapter gates, ported from
+[youtube-agent-skill](https://github.com/Jakeschincariol/youtube-agent-skill), MIT) and `npm run verify:e2e`
+(voiceover + render through the real worker using local macOS TTS).
+
 ## Production
 
 Required variables:

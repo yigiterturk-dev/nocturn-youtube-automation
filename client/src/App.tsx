@@ -5,7 +5,7 @@ import { QueryClientProvider, useMutation, useQuery } from "@tanstack/react-quer
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Activity, BarChart3, CalendarDays, Check, ChevronRight, CircleDollarSign, Clock3, Command, FileText, Film, Images, LayoutDashboard, Mic2, Moon, MoreHorizontal, Play, Plus, Radar, Search, Settings, ShieldCheck, Sparkles, Sun, TrendingUp, Users, WandSparkles, Zap } from "lucide-react";
 import type { Activity as ActivityType, Claim, Opportunity, ProductionJob, Source, Video } from "@shared/schema";
-import { queryClient, apiRequest, setAuthToken } from "@/lib/queryClient";
+import { queryClient, apiRequest, setAuthToken, openProtectedFile } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,20 +119,52 @@ function EvidenceLedger({video}:{video:Video}) {
   </div>;
 }
 
+type HookResult={hook:string;verdict:number;band:string;formula:string;fix:string};
+type TitleResult={title:string;thumbnailText:string;lint:{score:number;issues:{code:string;message:string}[]}};
+
+function JobDetails({job}:{job:ProductionJob}) {
+  const {toast}=useToast();
+  const out=job.output as Record<string,any>;
+  const open=(name:string,download?:boolean)=>openProtectedFile(`/api/production-jobs/${job.id}/files/${name}`,download?name:undefined).catch((error)=>toast({title:"File unavailable",description:error instanceof Error?error.message:"",variant:"destructive"}));
+  if(job.status==="failed") return <p className="mt-2 rounded bg-destructive/10 p-2 text-xs text-destructive" data-testid={`error-${job.kind}`}>{job.error}</p>;
+  if(job.status==="queued"||job.status==="running") return <Progress className="mt-2 h-1.5" value={job.progress}/>;
+  if(job.kind==="editorial_research"&&out.quality){
+    const q=out.quality as {wordCount:number;hooks:HookResult[];titles:TitleResult[];problems:string[]};
+    return <div className="mt-2 space-y-2 text-xs" data-testid="research-quality">
+      <p className="text-muted-foreground">{q.wordCount} words · ~{Math.round(q.wordCount/150)} min · angle: {out.dossier?.angle}</p>
+      <p><span className="font-medium">Best hook ({q.hooks[0]?.verdict}, {q.hooks[0]?.band}):</span> {q.hooks[0]?.hook}</p>
+      <ul className="space-y-1">{q.titles.map(t=><li key={t.title}><span className="font-medium">{t.lint.score}</span> · {t.title} <span className="text-muted-foreground">/ thumb: {t.thumbnailText}</span>{t.lint.issues.length>0&&<span className="text-amber-600"> · {t.lint.issues.map(i=>i.code).join(", ")}</span>}</li>)}</ul>
+      {q.problems.length>0&&<ul className="rounded bg-amber-500/10 p-2 text-amber-700 dark:text-amber-300">{q.problems.map(p=><li key={p}>• {p}</li>)}</ul>}
+      <details><summary className="cursor-pointer text-muted-foreground">Read script</summary><div className="mt-2 max-h-80 space-y-3 overflow-auto whitespace-pre-wrap rounded bg-background p-3">{(out.dossier?.sections??[]).map((s:{chapter:string;narration:string})=><div key={s.chapter}><p className="font-medium">{s.chapter}</p><p>{s.narration}</p></div>)}</div></details>
+    </div>;
+  }
+  if(job.kind==="visual_plan"&&out.plan) return <p className="mt-2 text-xs text-muted-foreground">{out.plan.scenes.length} scenes · {out.stockScenes} stock clips · {out.plan.shorts.length} Shorts planned · thumbnail “{out.plan.thumbnail.text}”</p>;
+  if(job.kind==="voiceover"&&out.audio) return <p className="mt-2 text-xs text-muted-foreground">{out.durationSeconds}s narration · {out.characters} characters · {out.provider}</p>;
+  if(job.kind==="render"&&out.report){
+    const r=out.report as {durationSeconds:number;checks:Record<string,boolean>;shorts:{file:string;durationSeconds:number}[]};
+    return <div className="mt-2 space-y-2 text-xs" data-testid="render-files">
+      <p className="text-muted-foreground">{Math.floor(r.durationSeconds/60)}:{String(Math.round(r.durationSeconds%60)).padStart(2,"0")} · {Object.entries(r.checks).filter(([,ok])=>!ok).map(([name])=>name).join(", ")||"all checks pass"}</p>
+      <div className="flex flex-wrap gap-1.5">{(out.files as string[]).map(name=><Button key={name} size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={()=>open(name,!/\.(mp4|png)$/.test(name))}>{name}</Button>)}</div>
+    </div>;
+  }
+  return null;
+}
+
 function ProductionConsole({video}:{video:Video}) {
   const {toast}=useToast();
   const jobsKey=[`/api/production-jobs?videoId=${video.id}`];
-  const {data:jobs=[],isLoading}=useQuery<ProductionJob[]>({queryKey:jobsKey});
-  const queue=useMutation({mutationFn:async(kind:"voiceover"|"visual_plan"|"render")=>(await apiRequest("POST",`/api/videos/${video.id}/production-jobs`,{kind})).json(),onSuccess:(job)=>{queryClient.invalidateQueries({queryKey:jobsKey});toast({title:"Production stage queued",description:job.status.replaceAll("_"," ")});}});
-  const review=useMutation({mutationFn:async(job:ProductionJob)=>(await apiRequest("PATCH",`/api/production-jobs/${job.id}/review`,{status:"completed",note:"Owner reviewed and accepted this production artifact."})).json(),onSuccess:()=>queryClient.invalidateQueries({queryKey:jobsKey}),onError:(error)=>toast({title:"Artifact is not reviewable yet",description:error instanceof Error?error.message:"Provider output is required.",variant:"destructive"})});
+  const {data:jobs=[],isLoading}=useQuery<ProductionJob[]>({queryKey:jobsKey,refetchInterval:(query)=>(query.state.data??[]).some(job=>job.status==="queued"||job.status==="running")?4000:false});
+  const queue=useMutation({mutationFn:async(kind:"editorial_research"|"voiceover"|"visual_plan"|"render")=>(await apiRequest("POST",`/api/videos/${video.id}/production-jobs`,{kind})).json(),onSuccess:(job)=>{queryClient.invalidateQueries({queryKey:jobsKey});toast({title:"Production stage queued",description:job.status.replaceAll("_"," ")});}});
+  const review=useMutation({mutationFn:async({job,status}:{job:ProductionJob;status:"completed"|"rejected"})=>(await apiRequest("PATCH",`/api/production-jobs/${job.id}/review`,{status,note:status==="completed"?"Owner reviewed and accepted this production artifact.":"Owner rejected this artifact; regenerate."})).json(),onSuccess:()=>queryClient.invalidateQueries({queryKey:jobsKey}),onError:(error)=>toast({title:"Artifact is not reviewable yet",description:error instanceof Error?error.message:"Provider output is required.",variant:"destructive"})});
   const approve=useMutation({mutationFn:async()=>(await apiRequest("PATCH",`/api/videos/${video.id}/publish-approval`,{approved:true,note:"Owner release approval after final render review."})).json(),onSuccess:()=>{queryClient.invalidateQueries({queryKey:["/api/dashboard"]});toast({title:"Release approved",description:"Publishing authorization is now recorded."});},onError:(error)=>toast({title:"Release gate blocked",description:error instanceof Error?error.message:"Complete final render review first.",variant:"destructive"})});
   const stages=[
-    {kind:"voiceover" as const,label:"Voiceover",description:"Narration synthesis and loudness QC",icon:Mic2},
-    {kind:"visual_plan" as const,label:"Visual plan",description:"Scene list, prompts and rights ledger",icon:Images},
-    {kind:"render" as const,label:"Final render",description:"Timeline assembly, captions and export",icon:Film},
+    {kind:"editorial_research" as const,label:"Script",description:"DeepSeek dossier, hook score and title lint (queued from Script studio)",icon:FileText},
+    {kind:"visual_plan" as const,label:"Visual plan",description:"Scenes, stock footage, Shorts selection and thumbnail",icon:Images},
+    {kind:"voiceover" as const,label:"Voiceover",description:"ElevenLabs narration with word timings",icon:Mic2},
+    {kind:"render" as const,label:"Final render",description:"Episode, 3 Shorts, captions, chapters and upload package",icon:Film},
   ];
   return <section className="grid gap-4 xl:grid-cols-[1.5fr_.7fr]">
-    <Card><CardHeader><CardTitle>Production assembly line</CardTitle><p className="mt-1 text-sm text-muted-foreground">{video.title}</p></CardHeader><CardContent className="space-y-3">{stages.map(({kind,label,description,icon:Icon})=>{const job=jobs.find(item=>item.kind===kind);return <div key={kind} className="grid gap-3 rounded-md bg-muted/50 p-4 sm:grid-cols-[1fr_auto] sm:items-center" data-testid={`stage-${kind}`}><div className="flex gap-3"><Icon className="mt-0.5 size-4 text-primary"/><div><p className="text-sm font-medium">{label}</p><p className="mt-1 text-xs text-muted-foreground">{description}</p>{job&&<Badge className="mt-2" variant={job.status==="completed"?"default":"secondary"}>{job.status.replaceAll("_"," ")}</Badge>}</div></div><div className="flex gap-2"><Button size="sm" variant="outline" disabled={queue.isPending} onClick={()=>queue.mutate(kind)} data-testid={`button-queue-${kind}`}>{job?"Queue again":"Queue"}</Button>{job?.status==="ready_for_review"&&<Button size="sm" variant="ghost" disabled={review.isPending} onClick={()=>review.mutate(job)} data-testid={`button-review-${kind}`}>Owner review</Button>}</div></div>})}{isLoading&&<p className="text-sm text-muted-foreground">Loading production jobs…</p>}</CardContent></Card>
+    <Card><CardHeader><CardTitle>Production assembly line</CardTitle><p className="mt-1 text-sm text-muted-foreground">{video.title}</p></CardHeader><CardContent className="space-y-3">{stages.map(({kind,label,description,icon:Icon})=>{const job=jobs.find(item=>item.kind===kind);return <div key={kind} className="grid gap-3 rounded-md bg-muted/50 p-4 sm:grid-cols-[1fr_auto] sm:items-center" data-testid={`stage-${kind}`}><div className="flex gap-3"><Icon className="mt-0.5 size-4 text-primary"/><div><p className="text-sm font-medium">{label}</p><p className="mt-1 text-xs text-muted-foreground">{description}</p>{job&&<Badge className="mt-2" variant={job.status==="completed"?"default":"secondary"}>{job.status.replaceAll("_"," ")}</Badge>}</div></div><div className="flex gap-2">{kind!=="editorial_research"&&<Button size="sm" variant="outline" disabled={queue.isPending||job?.status==="running"} onClick={()=>queue.mutate(kind)} data-testid={`button-queue-${kind}`}>{job?"Queue again":"Queue"}</Button>}{job?.status==="ready_for_review"&&<><Button size="sm" disabled={review.isPending} onClick={()=>review.mutate({job,status:"completed"})} data-testid={`button-review-${kind}`}>Approve</Button><Button size="sm" variant="ghost" disabled={review.isPending} onClick={()=>review.mutate({job,status:"rejected"})} data-testid={`button-reject-${kind}`}>Reject</Button></>}</div>{job&&<div className="sm:col-span-2"><JobDetails job={job}/></div>}</div>})}{isLoading&&<p className="text-sm text-muted-foreground">Loading production jobs…</p>}</CardContent></Card>
     <Card><CardHeader><CardTitle>Release authority</CardTitle><p className="mt-1 text-sm text-muted-foreground">Upload and scheduling remain separate from artifact production.</p></CardHeader><CardContent><div className="rounded-md bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300"><ShieldCheck className="mb-3 size-5"/>Only the workspace owner can approve release, and only after a completed render review.</div><Button className="mt-4 w-full" disabled={approve.isPending||video.publishApproved} onClick={()=>approve.mutate()} data-testid="button-approve-release">{video.publishApproved?"Release approved":"Approve final release"}</Button><p className="mt-3 text-xs text-muted-foreground">This records authority only. YouTube upload scope is still disabled.</p></CardContent></Card>
   </section>;
 }

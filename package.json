@@ -13,7 +13,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx script/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "worker": "tsx server/worker.ts",
+    "worker:once": "tsx server/worker.ts --once",
+    "verify:quality": "tsx script/verify-quality.ts",
+    "verify:e2e": "ALLOW_LOCAL_TTS=true tsx script/e2e-worker.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

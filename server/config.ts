@@ -14,6 +14,18 @@ const schema = z.object({
   GOOGLE_REDIRECT_URI: z.string().url().optional(),
   OPENAI_API_KEY: z.string().min(20).optional(),
   OPENAI_MODEL: z.string().default("gpt-5.6-sol"),
+  DEEPSEEK_API_KEY: z.string().min(20).optional(),
+  DEEPSEEK_MODEL: z.string().default("deepseek-chat"),
+  DEEPSEEK_BASE_URL: z.string().url().default("https://api.deepseek.com"),
+  ELEVENLABS_API_KEY: z.string().min(20).optional(),
+  ELEVENLABS_VOICE_ID: z.string().default("JBFqnCBsd6RMkjVDRZzb"),
+  ELEVENLABS_MODEL: z.string().default("eleven_multilingual_v2"),
+  PEXELS_API_KEY: z.string().min(20).optional(),
+  MEDIA_DIR: z.string().default("./media"),
+  CHANNEL_NAME: z.string().default(""),
+  // Development only: lets the worker fall back to macOS `say` so the pipeline can be tested without ElevenLabs.
+  ALLOW_LOCAL_TTS: z.enum(["true", "false"]).transform((value) => value === "true").default("false"),
+  WORKER_POLL_SECONDS: z.coerce.number().int().min(5).default(15),
 });
 
 const parsed = schema.safeParse(process.env);

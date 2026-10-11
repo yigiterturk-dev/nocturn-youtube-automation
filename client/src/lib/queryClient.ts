@@ -64,3 +64,16 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Artifacts sit behind bearer auth, so <a href> cannot fetch them directly.
+export async function openProtectedFile(url: string, download?: string) {
+  const res = await fetch(url, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
+  await throwIfResNotOk(res);
+  const objectUrl = URL.createObjectURL(await res.blob());
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  if (download) link.download = download;
+  else link.target = "_blank";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+}
